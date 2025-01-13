@@ -254,7 +254,6 @@ public class PaySheet extends javax.swing.JDialog {
 //        return 0;
 //    }
     private int getTotalSCount(int id) throws Exception {
-        System.out.println(date);
         ResultSet rs = MySql.select("SELECT COUNT(*) AS `count` FROM `stupayments` WHERE `classes_id` = '" + id + "' AND `DAT` LIKE '" + date + "%';");
 
         if (rs.next()) {
