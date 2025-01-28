@@ -4,6 +4,7 @@
  */
 package gui.classes;
 
+import java.awt.Font;
 import java.awt.Frame;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
@@ -13,6 +14,9 @@ import model.MySql;
 import model.Qube;
 import java.sql.ResultSet;
 import java.util.Vector;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 
 /**
  *
@@ -29,6 +33,19 @@ public class ClassRooms extends javax.swing.JDialog {
         initComponents();
         jLabel2.setVisible(false);
         setTableData();
+
+        Font tableFont = new Font("Poppins", Font.PLAIN, 12);
+        jTable1.setFont(tableFont);
+
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < jTable1.getColumnCount(); i++) {
+            jTable1.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
+        JTableHeader header = jTable1.getTableHeader();
+        Font headerFont = new Font("Poppins", Font.BOLD, 14);
+        header.setFont(headerFont);
     }
 
     /**
@@ -90,8 +107,12 @@ public class ClassRooms extends javax.swing.JDialog {
         });
         jScrollPane1.setViewportView(jTable1);
         if (jTable1.getColumnModel().getColumnCount() > 0) {
+            jTable1.getColumnModel().getColumn(0).setResizable(false);
             jTable1.getColumnModel().getColumn(0).setPreferredWidth(15);
+            jTable1.getColumnModel().getColumn(1).setResizable(false);
+            jTable1.getColumnModel().getColumn(2).setResizable(false);
             jTable1.getColumnModel().getColumn(2).setPreferredWidth(200);
+            jTable1.getColumnModel().getColumn(3).setResizable(false);
             jTable1.getColumnModel().getColumn(3).setPreferredWidth(15);
         }
 

@@ -7,6 +7,7 @@ package gui.teacher;
 import gui.classes.ClassProfile;
 import gui.student.Addresses;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -21,8 +22,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import model.MySql;
 import model.Qube;
 import org.apache.commons.io.FilenameUtils;
@@ -58,6 +62,20 @@ public class TeacherProfile extends javax.swing.JDialog {
         jTextField6.setEnabled(false);
         jTextField5.setEnabled(false);
         loadData();
+
+        Font tableFont = new Font("Poppins", Font.PLAIN, 12);
+        jTable1.setFont(tableFont);
+
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < jTable1.getColumnCount(); i++) {
+            jTable1.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
+        JTableHeader header = jTable1.getTableHeader();
+        Font headerFont = new Font("Poppins", Font.BOLD, 14);
+        header.setFont(headerFont);
+
     }
 
     private void onLoad() {
@@ -350,8 +368,6 @@ public class TeacherProfile extends javax.swing.JDialog {
 
         jPanel4.setLayout(new java.awt.GridLayout(1, 0, 0, 10));
 
-        jPanel3.setBackground(new java.awt.Color(40, 40, 40));
-
         jLabel4.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel4.setText("First Name");
 
@@ -521,8 +537,6 @@ public class TeacherProfile extends javax.swing.JDialog {
         );
 
         jPanel4.add(jPanel3);
-
-        jPanel2.setBackground(new java.awt.Color(40, 40, 40));
 
         jLabel15.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel15.setText("Class Schedule");
@@ -909,114 +923,114 @@ public class TeacherProfile extends javax.swing.JDialog {
 //        }
 ////####
 try {
-        if (validation()) {
-            ResultSet resultSet = MySql.select("SELECT * FROM `teachers` WHERE `nic` = '" + TNic + "'");
-            boolean canUpdate = false;
+            if (validation()) {
+                ResultSet resultSet = MySql.select("SELECT * FROM `teachers` WHERE `nic` = '" + TNic + "'");
+                boolean canUpdate = false;
 
-            if (resultSet.next()) {
-                if (!resultSet.getString("nic").equals(TNic)) {
-                    JOptionPane.showMessageDialog(this, "This NIC is already used", "Warning", JOptionPane.WARNING_MESSAGE);
+                if (resultSet.next()) {
+                    if (!resultSet.getString("nic").equals(TNic)) {
+                        JOptionPane.showMessageDialog(this, "This NIC is already used", "Warning", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        canUpdate = true;
+                    }
                 } else {
                     canUpdate = true;
                 }
-            } else {
-                canUpdate = true;
-            }
 
-            if (canUpdate) {
-                // Update general teacher details
-                MySql.iud("UPDATE teachers\n"
-                        + "SET name = '" + TName + "',\n"
-                        + "nic = '" + TNic + "',\n"
-                        + "mobile = '" + mob + "',\n"
-                        + "gender_id = " + GenderMap.get(gender) + "\n"
-                        + "WHERE nic = '" + TNic + "'");
+                if (canUpdate) {
+                    // Update general teacher details
+                    MySql.iud("UPDATE teachers\n"
+                            + "SET name = '" + TName + "',\n"
+                            + "nic = '" + TNic + "',\n"
+                            + "mobile = '" + mob + "',\n"
+                            + "gender_id = " + GenderMap.get(gender) + "\n"
+                            + "WHERE nic = '" + TNic + "'");
 
-                // Handle profile image update
-                if (filepath != null && !filepath.isEmpty()) {
-                    String extension = FilenameUtils.getExtension(filepath);
-                    String newImagePath = "src/profileImages/" + Qube.randomString() + "_" + TNic + "." + extension;
+                    // Handle profile image update
+                    if (filepath != null && !filepath.isEmpty()) {
+                        String extension = FilenameUtils.getExtension(filepath);
+                        String newImagePath = "src/profileImages/" + Qube.randomString() + "_" + TNic + "." + extension;
 
-                    try {
-                        BufferedImage originalImage = ImageIO.read(new File(filepath));
-                        ImageIO.write(originalImage, extension, new File(newImagePath));
-
-                        int response = JOptionPane.showConfirmDialog(
-                                this,
-                                "Do you want to update the profile image?",
-                                "Confirm Update",
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.QUESTION_MESSAGE
-                        );
-
-                        if (response == JOptionPane.YES_OPTION) {
-                            MySql.iud("UPDATE teacherpimg AS Tpi\n"
-                                    + "JOIN teachers AS t ON Tpi.teachers_id = t.id\n"
-                                    + "SET Tpi.location = '" + newImagePath + "'\n"
-                                    + "WHERE t.nic = '" + TNic + "';");
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                // Handle payment type logic
-                String selectedPaymentType = String.valueOf(jComboBox2.getSelectedItem());
-                if ("Cash".equals(selectedPaymentType)) {
-                    // Update payment type to Cash
-                    Object cashValue = paymentTypeMap.get("Cash");
-                    Integer cashId = null;
-
-                    if (cashValue instanceof Integer) {
-                        cashId = (Integer) cashValue;
-                    } else if (cashValue instanceof String) {
                         try {
-                            cashId = Integer.parseInt((String) cashValue);
-                        } catch (NumberFormatException e) {
-                            JOptionPane.showMessageDialog(this, "Invalid format for Cash ID.", "Error", JOptionPane.ERROR_MESSAGE);
-                            return;
+                            BufferedImage originalImage = ImageIO.read(new File(filepath));
+                            ImageIO.write(originalImage, extension, new File(newImagePath));
+
+                            int response = JOptionPane.showConfirmDialog(
+                                    this,
+                                    "Do you want to update the profile image?",
+                                    "Confirm Update",
+                                    JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE
+                            );
+
+                            if (response == JOptionPane.YES_OPTION) {
+                                MySql.iud("UPDATE teacherpimg AS Tpi\n"
+                                        + "JOIN teachers AS t ON Tpi.teachers_id = t.id\n"
+                                        + "SET Tpi.location = '" + newImagePath + "'\n"
+                                        + "WHERE t.nic = '" + TNic + "';");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
 
-                    if (cashId != null) {
-                        MySql.iud("UPDATE teachers SET paymentType_id = " + cashId + " WHERE nic = '" + TNic + "'");
-                    }
+                    // Handle payment type logic
+                    String selectedPaymentType = String.valueOf(jComboBox2.getSelectedItem());
+                    if ("Cash".equals(selectedPaymentType)) {
+                        // Update payment type to Cash
+                        Object cashValue = paymentTypeMap.get("Cash");
+                        Integer cashId = null;
 
-                    // Hide bank detail fields
-                    jTextField6.setEnabled(false); // Bank name field
-                    jTextField5.setEnabled(false); // Account number field
-                } else if ("Bank Transfer".equals(selectedPaymentType)) {
-                    // Update payment type to Bank Transfer
-                    Object bankTransferValue = paymentTypeMap.get("Bank Transfer");
-                    Integer bankTransferId = null;
-
-                    if (bankTransferValue instanceof Integer) {
-                        bankTransferId = (Integer) bankTransferValue;
-                    } else if (bankTransferValue instanceof String) {
-                        try {
-                            bankTransferId = Integer.parseInt((String) bankTransferValue);
-                        } catch (NumberFormatException e) {
-                            JOptionPane.showMessageDialog(this, "Invalid format for Bank Transfer ID.", "Error", JOptionPane.ERROR_MESSAGE);
-                            return;
+                        if (cashValue instanceof Integer) {
+                            cashId = (Integer) cashValue;
+                        } else if (cashValue instanceof String) {
+                            try {
+                                cashId = Integer.parseInt((String) cashValue);
+                            } catch (NumberFormatException e) {
+                                JOptionPane.showMessageDialog(this, "Invalid format for Cash ID.", "Error", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
                         }
+
+                        if (cashId != null) {
+                            MySql.iud("UPDATE teachers SET paymentType_id = " + cashId + " WHERE nic = '" + TNic + "'");
+                        }
+
+                        // Hide bank detail fields
+                        jTextField6.setEnabled(false); // Bank name field
+                        jTextField5.setEnabled(false); // Account number field
+                    } else if ("Bank Transfer".equals(selectedPaymentType)) {
+                        // Update payment type to Bank Transfer
+                        Object bankTransferValue = paymentTypeMap.get("Bank Transfer");
+                        Integer bankTransferId = null;
+
+                        if (bankTransferValue instanceof Integer) {
+                            bankTransferId = (Integer) bankTransferValue;
+                        } else if (bankTransferValue instanceof String) {
+                            try {
+                                bankTransferId = Integer.parseInt((String) bankTransferValue);
+                            } catch (NumberFormatException e) {
+                                JOptionPane.showMessageDialog(this, "Invalid format for Bank Transfer ID.", "Error", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+                        }
+
+                        if (bankTransferId != null) {
+                            MySql.iud("UPDATE teachers SET paymentType_id = " + bankTransferId + " WHERE nic = '" + TNic + "'");
+                        }
+
+                        // Show bank detail fields
+                        jTextField6.setEnabled(true); // Bank name field
+                        jTextField5.setEnabled(true); // Account number field
                     }
 
-                    if (bankTransferId != null) {
-                        MySql.iud("UPDATE teachers SET paymentType_id = " + bankTransferId + " WHERE nic = '" + TNic + "'");
-                    }
-
-                    // Show bank detail fields
-                    jTextField6.setEnabled(true); // Bank name field
-                    jTextField5.setEnabled(true); // Account number field
+                    JOptionPane.showMessageDialog(this, "Successfully updated.", "Teacher Update Successful", JOptionPane.INFORMATION_MESSAGE);
                 }
-
-                JOptionPane.showMessageDialog(this, "Successfully updated.", "Teacher Update Successful", JOptionPane.INFORMATION_MESSAGE);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error updating teacher details: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Error updating teacher details: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-    }
 
 
     }//GEN-LAST:event_jButton1ActionPerformed

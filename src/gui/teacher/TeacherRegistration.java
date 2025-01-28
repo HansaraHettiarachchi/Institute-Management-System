@@ -413,56 +413,7 @@ public class TeacherRegistration extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-//        if (validation()) {
-//            boolean cando = false;
-//            try {
-//                if (!MySql.select("SELECT * FROM `teachers` WHERE `nic` = ? OR `mobile` = ? ;", new Object[]{nic, mobile}).next()) {
-//                    cando = true;
-//                } else {
-//                    JOptionPane.showMessageDialog(this, "Already registered user with these with details.", "Already registered Teacher.", JOptionPane.WARNING_MESSAGE);
-//                }
-//            } catch (Exception ex) {
-//                l.log(Level.WARNING, "While check nic or mobile already exits.", ex);
-//            }
-//
-//            if (cando) {
-//                String query = "INSERT INTO `teachers` (`name`, `nic`, `mobile`, `paymentType_id`, status_id, `gender_id`) VALUES (?, ?, ?, ?, ?, ?); ";
-//
-//                Object val[] = new Object[]{fullName, nic, mobile, paymentTypeMap.get(paymentType), statusMap.get(status), genderMap.get(gen)};
-//                long insert_id = 0;
-//
-//                try {
-//                    insert_id = MySql.iud(query, val);
-//                } catch (Exception e) {
-//                    l.log(Level.WARNING, "While excecuting student query.", e);
-//                }
-//
-//                String extention = FilenameUtils.getExtension(filepath);
-//                String newImagePath = "src/profileImages/" + Qube.randomString() + "_" + String.valueOf(insert_id) + "." + extention;
-//
-//                try {
-//                    BufferedImage originalImage = ImageIO.read(new File(filepath));
-//                    ImageIO.write(originalImage, extention, new File(newImagePath));
-//
-//                    MySql.iud("INSERT INTO `teacherpimg` (`location`,`teachers_id`) VALUES ('" + newImagePath + "','" + insert_id + "');");
-//
-//                    JOptionPane.showMessageDialog(this, "Successfull.", "Teacher Registration Successfull, Pleace Update Address.", JOptionPane.INFORMATION_MESSAGE);
-//                    new Addresses(new Frame(), "teachers", (int) insert_id, fullName, "Set Teacher Address", true).setVisible(true);
-//
-        ////                    if (JOptionPane.showConfirmDialog(this, "Registration Successfull.", "Pleace Update Address.", JOptionPane.OK_OPTION) == 0) {
-////                    }
-//                    resetFields();
-//
-//                } catch (Exception e) {
-//                    l.log(Level.WARNING, "While moving image path.", e);
-//                }
-//            }
-//
-//            if ("Bank Transfer".equals(jComboBox2.getSelectedItem())) {
-//////////
-//            }
-//        }
-//////////////////////////////////////////####
+
         if (validation()) {
             boolean cando = false;
             try {
@@ -531,7 +482,7 @@ public class TeacherRegistration extends javax.swing.JDialog {
             }
         }
 
-        //////////////////////////////////////////####
+    //////////////////////////////////////////####
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
