@@ -430,6 +430,8 @@ public class TeacherRegistration extends javax.swing.JDialog {
                 Long aDetailsId = null;
 
                 if ("Bank Transfer".equals(paymentType)) {
+                    //Bank
+
                     String bankName = jTextField4.getText().trim();
                     String accountNumber = jTextField5.getText().trim();
 
@@ -446,43 +448,76 @@ public class TeacherRegistration extends javax.swing.JDialog {
                         JOptionPane.showMessageDialog(this, "Error while saving bank details.", "Database Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
-                }
 
-                String teacherInsertQuery = "INSERT INTO `teachers` (`name`, `nic`, `mobile`, `paymentType_id`, `status_id`, `gender_id`, `aDetails_id`) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?);";
-                Object[] teacherValues = new Object[]{
-                    fullName,
-                    nic,
-                    mobile,
-                    paymentTypeMap.get(paymentType),
-                    statusMap.get(status),
-                    genderMap.get(gen),
-                    aDetailsId
-                };
+                    String teacherInsertQuery = "INSERT INTO `teachers` (`name`, `nic`, `mobile`, `paymentType_id`, `status_id`, `gender_id`, `aDetails_id`) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?);";
+                    Object[] teacherValues = new Object[]{
+                        fullName,
+                        nic,
+                        mobile,
+                        paymentTypeMap.get(paymentType),
+                        statusMap.get(status),
+                        genderMap.get(gen),
+                        aDetailsId
+                    };
 
-                try {
-                    long teacherId = MySql.iud(teacherInsertQuery, teacherValues);
+                    try {
+                        long teacherId = MySql.iud(teacherInsertQuery, teacherValues);
 
-                    String extension = FilenameUtils.getExtension(filepath);
-                    String newImagePath = "src/profileImages/" + Qube.randomString() + "_" + teacherId + "." + extension;
+                        String extension = FilenameUtils.getExtension(filepath);
+                        String newImagePath = "src/profileImages/" + Qube.randomString() + "_" + teacherId + "." + extension;
 
-                    BufferedImage originalImage = ImageIO.read(new File(filepath));
-                    ImageIO.write(originalImage, extension, new File(newImagePath));
+                        BufferedImage originalImage = ImageIO.read(new File(filepath));
+                        ImageIO.write(originalImage, extension, new File(newImagePath));
 
-                    MySql.iud("INSERT INTO `teacherpimg` (`location`, `teachers_id`) VALUES (?, ?);", new Object[]{newImagePath, teacherId});
+                        MySql.iud("INSERT INTO `teacherpimg` (`location`, `teachers_id`) VALUES (?, ?);", new Object[]{newImagePath, teacherId});
 
-                    JOptionPane.showMessageDialog(this, "Registration Successful. Please update address.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    new Addresses(new Frame(), "teachers", (int) teacherId, fullName, "Set Teacher Address", true).setVisible(true);
+                        JOptionPane.showMessageDialog(this, "Registration Successful. Please update address.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        new Addresses(new Frame(), "teachers", (int) teacherId, fullName, "Set Teacher Address", true).setVisible(true);
 
-                    resetFields();
-                } catch (Exception e) {
-                    l.log(Level.WARNING, "Error while inserting teacher details.", e);
-                    JOptionPane.showMessageDialog(this, "Error while saving teacher details.", "Database Error", JOptionPane.ERROR_MESSAGE);
+                        resetFields();
+                    } catch (Exception e) {
+                        l.log(Level.WARNING, "Error while inserting teacher details.", e);
+                        JOptionPane.showMessageDialog(this, "Error while saving teacher details.", "Database Error", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                } else {
+                    //Cash
+
+                    String teacherInsertQuery = "INSERT INTO `teachers` (`name`, `nic`, `mobile`, `paymentType_id`, `status_id`, `gender_id`, `aDetails_id`) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, NULL);";
+                    Object[] teacherValues = new Object[]{
+                        fullName,
+                        nic,
+                        mobile,
+                        paymentTypeMap.get(paymentType),
+                        statusMap.get(status),
+                        genderMap.get(gen)
+                    };
+
+                    try {
+                        long teacherId = MySql.iud(teacherInsertQuery, teacherValues);
+
+                        String extension = FilenameUtils.getExtension(filepath);
+                        String newImagePath = "src/profileImages/" + Qube.randomString() + "_" + teacherId + "." + extension;
+
+                        BufferedImage originalImage = ImageIO.read(new File(filepath));
+                        ImageIO.write(originalImage, extension, new File(newImagePath));
+
+                        MySql.iud("INSERT INTO `teacherpimg` (`location`, `teachers_id`) VALUES (?, ?);", new Object[]{newImagePath, teacherId});
+
+                        JOptionPane.showMessageDialog(this, "Registration Successful. Please update address.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        new Addresses(new Frame(), "teachers", (int) teacherId, fullName, "Set Teacher Address", true).setVisible(true);
+
+                        resetFields();
+                    } catch (Exception e) {
+                        l.log(Level.WARNING, "Error while inserting teacher details.", e);
+                        JOptionPane.showMessageDialog(this, "Error while saving teacher details.", "Database Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             }
         }
 
-    //////////////////////////////////////////####
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
