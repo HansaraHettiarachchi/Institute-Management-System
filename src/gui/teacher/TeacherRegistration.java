@@ -108,7 +108,7 @@ public class TeacherRegistration extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this, "Please Select Gender", "Warning", JOptionPane.WARNING_MESSAGE);
 
         } else if (paymentType.equals("SELECT")) {
-            JOptionPane.showMessageDialog(this, "Please Select Gender", "Warning", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please Select Payment Type", "Warning", JOptionPane.WARNING_MESSAGE);
 
         } else if (mobile.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter your mobile Number", "Warning", JOptionPane.WARNING_MESSAGE);
