@@ -5,6 +5,7 @@
 package gui.student;
 
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -61,6 +62,7 @@ public class StudentProfile extends javax.swing.JDialog {
 
         onLoad();
         this.Sid = Sid;
+        jLabel21.setText(Sid);
 
         loadData();
     }
@@ -530,13 +532,28 @@ public class StudentProfile extends javax.swing.JDialog {
         );
 
         jPanel9.setBackground(new java.awt.Color(40, 40, 40));
+        jPanel9.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jPanel9MouseClicked(evt);
+            }
+        });
 
         jLabel17.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel17.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gui/student/icons/icons8-test-cheating-60.png"))); // NOI18N
+        jLabel17.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel17MouseClicked(evt);
+            }
+        });
 
         jLabel18.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel18.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel18.setText("Exams");
+        jLabel18.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel18MouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
@@ -851,6 +868,22 @@ public class StudentProfile extends javax.swing.JDialog {
     private void jLabel19MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel19MouseClicked
         printReport();
     }//GEN-LAST:event_jLabel19MouseClicked
+
+    private void jLabel17MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel17MouseClicked
+        Exams();
+    }//GEN-LAST:event_jLabel17MouseClicked
+
+    private void jPanel9MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel9MouseClicked
+        Exams();
+    }//GEN-LAST:event_jPanel9MouseClicked
+
+    private void jLabel18MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel18MouseClicked
+        Exams();
+    }//GEN-LAST:event_jLabel18MouseClicked
+    private void Exams() {
+        new StudentExams(new Frame(), true, Sid).setVisible(true);
+
+    }
 
     private void printReport() {
         try {

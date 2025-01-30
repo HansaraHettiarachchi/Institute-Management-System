@@ -29,7 +29,6 @@ import net.sf.jasperreports.view.JasperViewer;
  */
 public class StudentMain extends javax.swing.JPanel {
 
-    private HashMap<Integer, Object> genderMap = new HashMap<>();
     private HashMap<Integer, Object> statusMap = new HashMap<>();
     private HashMap<Integer, Object> classMap = new HashMap<>();
 
@@ -57,7 +56,7 @@ public class StudentMain extends javax.swing.JPanel {
 
         HashMap cM = new Qube().getComboData("classes", "", "name");
         jComboBox2.setModel((ComboBoxModel<String>) cM.get(1));
-        genderMap = (HashMap<Integer, Object>) cM.get(2);
+        classMap = (HashMap<Integer, Object>) cM.get(2);
 
         HashMap sM = new Qube().getComboData("status", "", "name");
         jComboBox1.setModel((ComboBoxModel<String>) sM.get(1));
