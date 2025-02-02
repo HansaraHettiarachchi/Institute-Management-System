@@ -14,6 +14,8 @@ import java.awt.image.DataBufferByte;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -37,29 +39,64 @@ import java.util.logging.Logger;
 import model.MySql;
 import org.opencv.videoio.Videoio;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Vector;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.Point;
+import org.opencv.objdetect.CascadeClassifier;
+import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
+import org.zeromq.ZMsg;
+import static zmq.ZMQ.socket;
 
 public class FaceRecognition extends javax.swing.JFrame {
 
     VideoCapture cap;
-    ExecutorService executor = Executors.newFixedThreadPool(10);
     Logger l = new Qube().setLogger("FaceRec.log");
     boolean canDo = true;
+    boolean doIt = true;
+    boolean endReading = false;
+//    public static String recType = "Students";
     public static String recType = "Employees";
     private Integer camType = 0;
     String tableName;
     String id;
+    String teacherId;
+    String classId;
+    String previouslyMarkedAtt = "";
+    int tBRCount = 1;
+
+//    private static String fileLocation = "pyScript/call1_2.py";
+    private static String fileLocation = "pyScript/call.py";
+    private static String tcpAddress = "tcp://localhost:5555";
+
+    boolean stCam = true;
+    boolean stCam1 = false;
 
     Thread t = new Thread(() -> {
         startCamera();
     });
 
     public FaceRecognition() {
+
         initComponents();
         t.start();
         developeLater();
         if (!recType.equals("Students")) {
             jLabel10.setText("");
         }
+        jComboBox1.setEnabled(false);
+        if (recType.equals("Employees")) {
+            jLabel8.setText(" ");
+            jLabel13.setText(" ");
+        }
+
+        jLabel12.setText(recType);
+
     }
 
     private void developeLater() {
@@ -101,6 +138,7 @@ public class FaceRecognition extends javax.swing.JFrame {
         jTable1 = new javax.swing.JTable();
         jLabel3 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setAlwaysOnTop(true);
@@ -108,30 +146,32 @@ public class FaceRecognition extends javax.swing.JFrame {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
             }
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
         });
 
         jPanel3.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(59, 102, 142), 3, true));
 
         jLabel5.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
-        jLabel5.setText("Type : ");
+        jLabel5.setText("Name : ");
 
         jLabel6.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
-        jLabel6.setText("Class Fee : ");
+        jLabel6.setText("ID :");
 
         jLabel4.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
-        jLabel4.setText("Name :  ");
+        jLabel4.setText("Type :  ");
 
         jLabel2.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gui/icons/dasdsadsa.png"))); // NOI18N
 
-        jLabel7.setFont(new java.awt.Font("Poppins", 1, 16)); // NOI18N
-        jLabel7.setForeground(new java.awt.Color(0, 255, 0));
-        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel7.setText("Paid");
+        jLabel7.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel7.setText(" ");
 
         jLabel8.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
-        jLabel8.setText("ID :");
+        jLabel8.setText("Class Fee :");
 
         jTextField1.setFont(new java.awt.Font("Poppins", 1, 15)); // NOI18N
 
@@ -156,9 +196,9 @@ public class FaceRecognition extends javax.swing.JFrame {
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel6Layout.createSequentialGroup()
-                .addContainerGap(12, Short.MAX_VALUE)
+                .addContainerGap(13, Short.MAX_VALUE)
                 .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -178,9 +218,9 @@ public class FaceRecognition extends javax.swing.JFrame {
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
-                .addContainerGap(10, Short.MAX_VALUE)
+                .addContainerGap(11, Short.MAX_VALUE)
                 .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -200,9 +240,9 @@ public class FaceRecognition extends javax.swing.JFrame {
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
-                .addContainerGap(12, Short.MAX_VALUE)
+                .addContainerGap(13, Short.MAX_VALUE)
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -220,8 +260,10 @@ public class FaceRecognition extends javax.swing.JFrame {
         jLabel12.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel12.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
-        jLabel13.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
-        jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel13.setFont(new java.awt.Font("Poppins", 1, 16)); // NOI18N
+        jLabel13.setForeground(new java.awt.Color(0, 255, 0));
+        jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel13.setText("Paid");
 
         jComboBox1.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -248,21 +290,21 @@ public class FaceRecognition extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jButton1))
                             .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                                .addComponent(jLabel6)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 235, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(jLabel8)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel14)
@@ -349,17 +391,19 @@ public class FaceRecognition extends javax.swing.JFrame {
                 .addGap(6, 6, 6))
         );
 
+        jTable1.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {},
+                {},
+                {},
+                {}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
+        jTable1.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(jTable1);
 
         jLabel3.setFont(new java.awt.Font("Poppins", 1, 24)); // NOI18N
@@ -367,22 +411,26 @@ public class FaceRecognition extends javax.swing.JFrame {
 
         jLabel10.setFont(new java.awt.Font("Poppins", 1, 15)); // NOI18N
         jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel10.setText("2022 Revition - Sujith Liyanage");
+        jLabel10.setText(" ");
+
+        jLabel15.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel15.setText(" ");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(25, 25, 25)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 795, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(6, 6, 6))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(25, 25, 25))
         );
         jPanel1Layout.setVerticalGroup(
@@ -392,10 +440,12 @@ public class FaceRecognition extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(jLabel10))
-                .addGap(25, 25, 25)
+                .addGap(22, 22, 22)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel15)
                 .addGap(25, 25, 25))
         );
 
@@ -405,13 +455,19 @@ public class FaceRecognition extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    public void setData(String recType, Integer camType) {
+    public void setData(String recType, Integer camType, String classId, String teacherId, String className, String teacherName) {
         this.camType = camType;
         this.recType = recType;
+        this.classId = classId;
+        this.teacherId = teacherId;
+
+        jLabel10.setText(className + " - " + teacherName);
+        jLabel12.setText(recType);
     }
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         cap.release();
+
 
     }//GEN-LAST:event_formWindowClosed
 
@@ -423,6 +479,19 @@ public class FaceRecognition extends javax.swing.JFrame {
             l.log(Level.WARNING, "While checking student id", ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        if (recType.equals("Employees")) {
+            jLabel6.setText("NIC");
+        }
+//        classId = "3";
+//        markAttendance("64288929");
+        try {
+            setTableData();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }//GEN-LAST:event_formWindowOpened
 
     public static void main(String args[]) {
 
@@ -442,38 +511,131 @@ public class FaceRecognition extends javax.swing.JFrame {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
+    Thread getPyReady = new Thread(() -> {
+
+        Path path = Paths.get(fileLocation);
+        fileLocation = String.valueOf(path.toAbsolutePath());
+
+        Process p = null;
+        try {
+            ProcessBuilder pb1 = new ProcessBuilder("python", fileLocation, tcpAddress);
+            pb1.redirectErrorStream(true);
+            p = pb1.start();
+            BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String results;
+            while ((results = in.readLine()) != null) {
+                if (endReading) {
+                    System.out.println("Reading ended..");
+                    break;
+                }
+
+                if (results.contains("Match found")) {
+                    String id = results.split(":")[0].split(":")[0].split("-")[1].split(" with distance")[0].replaceAll("\\s", "");
+                    if (!previouslyMarkedAtt.equals(id)) {
+//                        JOptionPane.showMessageDialog(this, id);
+                        setResults("Match Found. Marking attendance.......");
+                        markAttendance(id);
+                    }
+                } else if (results.equals("Listening on port tcp://localhost:5555")) {
+                    doIt = false;
+                } else {
+                    setResults(results);
+                }
+                System.out.println(results);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (p != null) {
+                p.destroy();
+            }
+        }
+    });
+
+//    @SuppressWarnings("deprecation")
     private void startCamera() {
         jLabel1.setText("");
 
-        try {
+        try (ZContext context = new ZContext(); @SuppressWarnings("deprecation") ZMQ.Socket socket = context.createSocket(ZMQ.PUSH)) {
+            socket.connect(tcpAddress);
 
             cap = new VideoCapture(camType);
-            cap.set(Videoio.CAP_PROP_FRAME_WIDTH, 2560);
-            cap.set(Videoio.CAP_PROP_FRAME_HEIGHT, 1440);
+            cap.set(Videoio.CAP_PROP_FRAME_WIDTH, 1920);
+            cap.set(Videoio.CAP_PROP_FRAME_HEIGHT, 1080);
 
             Mat frame = new Mat();
             Mat displayFrame = new Mat();
 
+            MatOfByte matOfByte = new MatOfByte();
+
             if (cap.isOpened()) {
                 int i = 0;
+//                killConnection();
+                getPyReady.start();
                 while (canDo) {
                     i++;
 
                     if (!cap.read(frame)) {
-                        executor.shutdownNow();
-                        t.interrupt();
+                        System.out.println("Main Loop ended..");
 
                         canDo = false;
+                        stCam1 = true;
+                        endReading = true;
                         break;
                     }
-                    String filePath = "pyScript/frames/frame" + i + ".jpeg";
-                    Imgcodecs.imwrite(filePath, frame);
+
+                    Thread t12 = new Thread(() -> {
+                        while (doIt) {
+                            try {
+                                Thread.sleep(400);
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                        while (true) {
+                            if (stCam1) {
+                                System.out.println("MSG sending ended..");
+                                killConnection();
+                                break;
+                            }
+
+                            Imgcodecs.imencode(".png", frame, matOfByte);
+                            byte[] byteArray = matOfByte.toArray();
+
+                            if (socket != null && !context.isClosed()) {
+                                ZMsg msg = new ZMsg();
+                                msg.add(byteArray);
+                                msg.send(socket);
+                            } else {
+                                System.out.println("Socket is not open. Cannot send message.");
+                                canDo = false;
+                                stCam1 = true;
+                                endReading = true;
+                                break;
+                            }
+
+                            try {
+                                Thread.sleep(400);
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+
+                    });
+
+                    if (stCam) {
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ex) {
+                            ex.printStackTrace();
+                        }
+                        t12.start();
+                        stCam = false;
+                    }
 
                     Imgproc.resize(frame, displayFrame, new Size(960, 540));
                     BufferedImage image = matToBufferedImage(displayFrame);
                     SwingUtilities.invokeLater(() -> jLabel1.setIcon(new ImageIcon(image.getScaledInstance(jLabel1.getWidth(), jLabel1.getHeight(), image.SCALE_SMOOTH))));
-
-                    executor.submit(new FaceRec(filePath, i, jLabel13, this));
 
                     if (i == 5) {
                         i = 0;
@@ -486,6 +648,218 @@ public class FaceRecognition extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void killConnection() {
+//        Path path = Paths.get("pyScript\\killConnection.py");
+//        fileLocation = String.valueOf(path.toAbsolutePath());
+//
+//        Process p = null;
+//        try {
+//            new ProcessBuilder("python", fileLocation).start();
+////            pb1.redirectErrorStream(true);
+//            
+////            BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+////            String results;
+////            while ((results = in.readLine()) != null) {
+////               
+////                System.out.println(results);
+////            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (p != null) {
+//                p.destroy();
+//            }
+//        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void markAttendanceStudent(String id) throws Exception {
+        Date d = new Date();
+        String dat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(d);
+
+        ResultSet rs = MySql.select("SELECT * FROM `attendance` WHERE `DAT` LIKE '" + new SimpleDateFormat("yyyy-MM-dd").format(d) + "%'"
+                + " AND `classes_id` = '" + classId + "' AND `student_id` = '" + id + "';");
+
+        if (!rs.next()) {
+            System.out.println(classId);
+            MySql.iud("INSERT INTO `attendance` (`DAT`,`student_id`,`classes_id`) VALUES (?, ?, ?);", new Object[]{dat, id, Integer.parseInt(classId)});
+            previouslyMarkedAtt = id;
+            DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
+
+            Vector v = new Vector();
+
+            v.add(tBRCount);
+            v.add(jLabel7.getText());
+            v.add(jLabel11.getText());
+            v.add(dat);
+
+            dtm.addRow(v);
+            tBRCount++;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void markAttendanceUser(String id) throws Exception {
+        Date d = new Date();
+        String time = new SimpleDateFormat("HH:mm:ss").format(d);
+
+        ResultSet rs = MySql.select("SELECT * FROM `user_attendance` WHERE `date` = '" + new SimpleDateFormat("yyyy-MM-dd").format(d) + "'"
+                + " AND `user_id` = '" + id + "';");
+
+        DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
+        Vector v = new Vector();
+
+        v.add(tBRCount);
+        v.add(jLabel7.getText());
+        v.add(jLabel11.getText());
+
+        if (!rs.next()) {
+            MySql.iud("INSERT INTO `user_attendance` (`date`,`user_id`,`arrival_at`,`leave_at`) VALUES (?, ?, ?, ?);",
+                    new Object[]{new SimpleDateFormat("yyyy-MM-dd").format(d), id, time, time});
+            previouslyMarkedAtt = id;
+            v.add(time);
+            v.add(time);
+        } else {
+            MySql.iud("UPDATE `user_attendance` SET `leave_at` = '" + time + "' WHERE `id` = '" + rs.getString("id") + "'; ");
+            previouslyMarkedAtt = id;
+            v.add(rs.getString("arrival_at"));
+            v.add(time);
+        }
+
+        dtm.addRow(v);
+        tBRCount++;
+    }
+
+    private String isPaid(String id) throws Exception {
+
+        ResultSet rs = MySql.select("SELECT * FROM `stuPayments` WHERE `student_id` = '" + id + "' AND `DAT` LIKE '" + new SimpleDateFormat("yyyy-MM").format(new Date()) + "%'; ");
+
+        if (rs.next()) {
+            return "Paid";
+        }
+        return "Unpaid";
+
+    }
+
+    private void markAttendance(String id) {
+
+        if (recType.equals("Employees")) {
+            try {
+                ResultSet rs = MySql.select("SELECT * FROM `user` WHERE `id` = '" + id + "';");
+
+                if (rs.next()) {
+                    jLabel11.setText(rs.getString("fname") + " " + rs.getString("lname"));
+                    jLabel7.setText(rs.getString("nic"));
+//                    jLabel13.setText(isPaid(rs.getString("id")));
+                    markAttendanceUser(rs.getString("id"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            try {
+                ResultSet rs = MySql.select("SELECT * FROM `student` WHERE `id` = '" + id + "';");
+                if (rs.next()) {
+                    jLabel11.setText(rs.getString("fname") + " " + rs.getString("lname"));
+                    jLabel7.setText(rs.getString("id"));
+                    jLabel13.setText(isPaid(rs.getString("id")));
+                    markAttendanceStudent(rs.getString("id"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void setResults(String x) {
+        jLabel15.setText(x);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void setTableData() throws Exception {
+
+        DefaultTableModel dtm = setTableHeaders();
+        dtm.setRowCount(0);
+
+        Date d = new Date();
+
+        if (recType.equals("Employees")) {
+            ResultSet rs = MySql.select("SELECT * FROM `user_attendance` INNER JOIN `user` ON `user_attendance`.`user_id` = `user`.`id`"
+                    + " WHERE `date` = '" + new SimpleDateFormat("yyyy-MM-dd").format(d) + "' ;");
+
+            while (rs.next()) {
+                Vector v = new Vector();
+
+                v.add(tBRCount);
+                v.add(rs.getString("NIC"));
+                v.add(rs.getString("fname") + " " + rs.getString("lname"));
+                v.add(rs.getString("arrival_at"));
+                v.add(rs.getString("leave_at"));
+
+                dtm.addRow(v);
+                tBRCount++;
+            }
+        } else {
+            ResultSet rs = MySql.select("SELECT * FROM `attendance` INNER JOIN `student` ON `student`.`id` = `attendance`.`student_id`"
+                    + " WHERE `DAT` LIKE '" + new SimpleDateFormat("yyyy-MM-dd").format(d) + "%' AND `classes_id` = '" + classId + "'");
+
+            while (rs.next()) {
+                Vector v = new Vector();
+
+                v.add(tBRCount);
+                v.add(rs.getString("id"));
+                v.add(rs.getString("fname") + " " + rs.getString("lname"));
+                v.add(rs.getString("DAT"));
+
+                dtm.addRow(v);
+                tBRCount++;
+            }
+        }
+
+    }
+
+    private DefaultTableModel setTableHeaders() {
+        Font popinsFont = new Font("Popins", Font.BOLD, 15);
+
+        DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer();
+        headerRenderer.setFont(popinsFont);
+        headerRenderer.setHorizontalAlignment(JLabel.LEFT);
+
+        DefaultTableModel tb = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                int[] nonEditableColumns = {0, 1};
+                for (int col : nonEditableColumns) {
+                    if (column == col) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+
+        tb.setColumnCount(0);
+
+        if (!recType.equals("Employees")) {
+            tb.addColumn("No.");
+            tb.addColumn("Student ID");
+            tb.addColumn("Student Name");
+            tb.addColumn("Date and Time");
+        } else {
+            tb.addColumn("No.");
+            tb.addColumn("NIC");
+            tb.addColumn("Name");
+            tb.addColumn("Arrived Time");
+            tb.addColumn("Leaved Time");
+        }
+
+        jTable1.setModel(tb);
+        jTable1.getTableHeader().setDefaultRenderer(headerRenderer);
+
+        return tb;
     }
 
     private BufferedImage matToBufferedImage(Mat mat) {
@@ -515,6 +889,7 @@ public class FaceRecognition extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -541,59 +916,5 @@ public class FaceRecognition extends javax.swing.JFrame {
         jLabel11.setText(type);
         jLabel13.setText(id);
 
-    }
-}
-
-class FaceRec implements Callable<Integer> {
-
-    private String filePath;
-    private Integer i;
-    private JLabel lable1;
-    private FaceRecognition faceRec;
-
-    public FaceRec(String data, Integer i, JLabel l, Object faceRec) {
-        this.filePath = data;
-        this.i = i;
-//        this.lable1 = l;
-        this.faceRec = (FaceRecognition) faceRec;
-    }
-
-    @Override
-    public Integer call() throws Exception {
-        ProcessBuilder pb1 = new ProcessBuilder("python", "pyScript/file" + i + ".py", filePath, "pyScript/pickles/combined_data.pkl");
-
-        pb1.redirectErrorStream(true);
-        Process p = pb1.start();
-        BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-        String results;
-        while ((results = in.readLine()) != null) {
-
-            if (results.contains("Person identified as :")) {
-                String id = results.split(":")[1];
-//                faceRec.setRecData(results.split(":")[1]);
-
-                if (FaceRecognition.recType.equals("Students")) {
-                    ResultSet rs = MySql.select("SELECT * FROM `student`  WHERE `id` = '" + id.replaceAll("\\s+", "") + "'; ");
-                    if (rs.next()) {
-                        faceRec.setRecData(rs.getString("fname") + " " + rs.getString("lname"), rs.getString("userType.name"), rs.getString("id"));
-                    }
-                } else {
-                    System.out.println(id);
-                    ResultSet rs1 = new MySql().selectInstance("SELECT * FROM `user` INNER JOIN `userType` ON `user`.`userType_id` = `usertype`.`id` WHERE `user`.`id` = '" + id.replaceAll("\\s+", "") + "'; ");
-//                    ResultSet rs1 = MySql.select("SELECT * FROM `user` WHERE `nic` = ?; ",new Object[]{id.replaceAll("\\s+", "")});
-
-                    if (rs1.next()) {
-                        faceRec.setRecData(rs1.getString("fname") + " " + rs1.getString("lname"), rs1.getString("userType.name"), rs1.getString("id"));
-                    }
-                }
-            } else if (results.length() < 50) {
-                faceRec.setRecData(results, "", "");
-            }
-            System.out.println(results);
-        }
-
-        int exitCode = p.waitFor();
-        return exitCode;
     }
 }

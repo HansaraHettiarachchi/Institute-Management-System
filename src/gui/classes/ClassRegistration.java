@@ -893,6 +893,7 @@ public class ClassRegistration extends javax.swing.JDialog {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void setTableData(Object id) {
         DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
         try {

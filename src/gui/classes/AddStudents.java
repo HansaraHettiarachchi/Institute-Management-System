@@ -40,6 +40,7 @@ public class AddStudents extends javax.swing.JDialog {
         loadStudents(this.Cid);
     }
 
+    @SuppressWarnings("unchecked")
     private void loadData() throws Exception {
         HashMap m1 = new Qube().getComboData("student", "", "id", "fname");
         jComboBox1.setModel((ComboBoxModel<String>) m1.get(1));

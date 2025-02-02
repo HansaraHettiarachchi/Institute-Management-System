@@ -656,6 +656,7 @@ public class Student_Payment extends javax.swing.JDialog {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     private void setClassData(String student_id) throws Exception {
 
         HashMap m1 = new Qube().getComboData("student_has_classes", "INNER JOIN `classes` ON `classes`.`id` = `student_has_classes`.`classes_id` WHERE `student_id` = '" + student_id + "'", "name");

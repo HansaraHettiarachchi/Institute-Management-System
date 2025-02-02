@@ -80,6 +80,7 @@ public class SingleResultSheet extends javax.swing.JDialog {
 
                 ResultSet rs1 = MySql.select("SELECT * FROM `exam_attendance` WHERE `exams_id` = '" + eId + "' AND `student_id` = '" + rs.getString("student.id") + "'; ");
 
+                @SuppressWarnings("unchecked")
                 Vector<String> v = new Vector();
                 if (rs1.next()) {
                     v.add(rs.getString("student.id"));

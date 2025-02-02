@@ -55,6 +55,7 @@ public class TeacherMain extends javax.swing.JPanel {
 
     }
 
+    @SuppressWarnings("unchecked")
     private void onLoad() {
 
         HashMap cM = new Qube().getComboData("classes", "", "name");

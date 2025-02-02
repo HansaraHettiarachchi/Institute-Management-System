@@ -1,10 +1,4 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-import logging
-logging.captureWarnings(True)
-logging.getLogger('tensorflow').setLevel(logging.ERROR)
-
 import pickle
 from deepface import DeepFace
 import cv2
@@ -27,12 +21,12 @@ def encode_and_save_images(image_dir, output_file):
 
             try:
                 # Get embedding using DeepFace with enforce_detection set to True
-                embedding = DeepFace.represent(preprocessed_image, model_name="Facenet")[0]["embedding"]
+                embedding = DeepFace.represent(preprocessed_image, model_name="VGG-Face")[0]["embedding"]
                 base_filename = os.path.splitext(filename)[0]
                 all_images_data[base_filename] = embedding
                 count += 1
             except ValueError as e:
-                print(f"Skipping file {image_path}: ")
+                print(f"Skipping file {image_path}: {e}")
 
     # Save all preprocessed images data to a single .pkl file
     with open(output_file, 'wb') as pkl_file:
@@ -41,6 +35,7 @@ def encode_and_save_images(image_dir, output_file):
     print(f"Encoding and saving process completed. Total images encoded: {count}")
 
 if __name__ == "__main__":
-    image_directory = "images/"
-    output_file = "pickles/combined_data.pkl"
+    image_directory = "img/"
+    output_file = "VGG-Face.pkl"
     encode_and_save_images(image_directory, output_file)
+

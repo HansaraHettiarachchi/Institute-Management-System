@@ -52,6 +52,7 @@ public class Exams extends javax.swing.JDialog {
         onload();
     }
     
+    @SuppressWarnings("unchecked")
     private void onload() {
         HashMap m = new Qube().getComboData("extimef", "", "name", false);
         jComboBox1.setModel((ComboBoxModel<String>) m.get(1));
@@ -80,6 +81,7 @@ public class Exams extends javax.swing.JDialog {
         dtm.setRowCount(0);
         
         while (rs.next()) {
+            @SuppressWarnings("unchecked")
             Vector<String> v = new Vector();
             
             v.add(rs.getString("exams.id"));

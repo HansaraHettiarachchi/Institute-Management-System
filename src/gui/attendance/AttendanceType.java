@@ -18,6 +18,8 @@ import javax.swing.DefaultComboBoxModel;
 import model.MySql;
 import model.Qube;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
+import javax.swing.JOptionPane;
 import model.RightAlignedComboBoxRenderer;
 
 /**
@@ -25,39 +27,48 @@ import model.RightAlignedComboBoxRenderer;
  * @author ASUS
  */
 public class AttendanceType extends javax.swing.JDialog {
-
+    
     private final Logger l = new Qube().setLogger("AttendanceType.log");
     private HashMap<String, Integer> camData = new HashMap<>();
-
+    private HashMap<String, Integer> teacherData = new HashMap<>();
+    private HashMap<String, Integer> classesData = new HashMap<>();
+    
     public AttendanceType(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         onlaod();
     }
-
+    
+    @SuppressWarnings("unchecked")
     private void onlaod() {
         try {
             loadData();
         } catch (Exception ex) {
             l.log(Level.WARNING, "While checking detected cam using py file", ex);
         }
-
+        
         jComboBox3.setEnabled(false);
+        jComboBox4.setEnabled(false);
         jComboBox1.setRenderer(new RightAlignedComboBoxRenderer());
         jComboBox2.setRenderer(new RightAlignedComboBoxRenderer());
         jComboBox3.setRenderer(new RightAlignedComboBoxRenderer());
+        jComboBox4.setRenderer(new RightAlignedComboBoxRenderer());
+        
+        HashMap m = new Qube().getComboData("teachers", "", "nic", "name");
+        jComboBox4.setModel((ComboBoxModel<String>) m.get(1));
+        teacherData = (HashMap<String, Integer>) m.get(2);
     }
-
+    
     private void loadData() throws Exception {
         ProcessBuilder pb1 = new ProcessBuilder("python", "pyScript/findDetectedCamS.py");
-
+        
         pb1.redirectErrorStream(true);
         Process p = pb1.start();
         BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
+        
         String results;
         Vector<String> v = new Vector<>();
-
+        
         int i = 0;
         while ((results = in.readLine()) != null) {
             v.add(results);
@@ -65,7 +76,7 @@ public class AttendanceType extends javax.swing.JDialog {
             i++;
         }
         jComboBox1.setModel(new DefaultComboBoxModel<>(v));
-
+        
     }
 
     /**
@@ -85,6 +96,8 @@ public class AttendanceType extends javax.swing.JDialog {
         jComboBox2 = new javax.swing.JComboBox<>();
         jComboBox3 = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        jComboBox4 = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -112,7 +125,6 @@ public class AttendanceType extends javax.swing.JDialog {
         });
 
         jComboBox3.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
-        jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jButton1.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jButton1.setText("START ");
@@ -122,31 +134,45 @@ public class AttendanceType extends javax.swing.JDialog {
             }
         });
 
+        jLabel5.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel5.setText("Teacher :");
+
+        jComboBox4.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox4ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(25, 25, 25)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
                             .addComponent(jLabel2)
                             .addComponent(jLabel4)
                             .addComponent(jLabel3))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jComboBox4, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jComboBox3, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jComboBox2, 0, 267, Short.MAX_VALUE)
+                            .addComponent(jComboBox2, 0, 283, Short.MAX_VALUE)
                             .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addGap(26, 26, 26))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(133, 133, 133)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -163,11 +189,15 @@ public class AttendanceType extends javax.swing.JDialog {
                     .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
                 .addComponent(jButton1)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addGap(25, 25, 25))
         );
 
         pack();
@@ -175,23 +205,51 @@ public class AttendanceType extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String item = String.valueOf(jComboBox3.getSelectedItem());
+        
+        if (item.equals("SELECT")) {
+            JOptionPane.showMessageDialog(this, "Please select teacher before start", "Select Teacher Please", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
         FaceRecognition faceRec = new FaceRecognition();
-        faceRec.setData(String.valueOf(jComboBox2.getSelectedItem()), camData.get(String.valueOf(jComboBox1.getSelectedItem())));
+        faceRec.setData(String.valueOf(jComboBox2.getSelectedItem()),
+                camData.get(String.valueOf(jComboBox1.getSelectedItem())),
+                String.valueOf(classesData.get(item)),
+                String.valueOf(teacherData.get(String.valueOf(jComboBox4.getSelectedItem()))),
+                item,
+                String.valueOf(jComboBox4.getSelectedItem())
+        );
+        
         faceRec.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
-
+        
         String item = String.valueOf(jComboBox2.getSelectedItem());
-
+        
         if (item.equals("Employees")) {
             jComboBox3.setEnabled(false);
+            jComboBox4.setEnabled(false);
         } else if (item.equals("Students")) {
-
+            
             jComboBox3.setEnabled(true);
+            jComboBox4.setEnabled(true);
+            
         }
     }//GEN-LAST:event_jComboBox2ActionPerformed
+
+    @SuppressWarnings("unchecked")
+    private void jComboBox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox4ActionPerformed
+        String item = String.valueOf(jComboBox4.getSelectedItem());
+        
+        HashMap m = new Qube().getComboData("classes", "WHERE `classes`.`teachers_id` = '" + teacherData.get(String.valueOf(item)) + "'", "name", false);
+        jComboBox3.setModel((ComboBoxModel<String>) m.get(1));
+        classesData = (HashMap<String, Integer>) m.get(2);
+        
+        jComboBox3.setEnabled(true);
+    }//GEN-LAST:event_jComboBox4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -240,9 +298,11 @@ public class AttendanceType extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JComboBox<String> jComboBox3;
+    private javax.swing.JComboBox<String> jComboBox4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     // End of variables declaration//GEN-END:variables
 }

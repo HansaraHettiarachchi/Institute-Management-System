@@ -78,6 +78,7 @@ public class TeacherProfile extends javax.swing.JDialog {
 
     }
 
+    @SuppressWarnings("unchecked")
     private void onLoad() {
 
         HashMap gM = new Qube().getComboData("gender", "", "name");

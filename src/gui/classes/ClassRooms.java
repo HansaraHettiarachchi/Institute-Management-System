@@ -259,6 +259,7 @@ public class ClassRooms extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_jTable1MouseClicked
 
+    @SuppressWarnings("unchecked")
     private void setTableData() {
         DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
         dtm.setRowCount(0);

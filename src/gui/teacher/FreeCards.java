@@ -261,6 +261,7 @@ public class FreeCards extends javax.swing.JDialog {
         Qube.typeOnlyDigit(evt);
     }//GEN-LAST:event_jTextField1KeyTyped
 
+    @SuppressWarnings("unchecked")
     private void jTextField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyPressed
         
         String text = jTextField1.getText();

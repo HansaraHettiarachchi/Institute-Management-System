@@ -43,6 +43,7 @@ public class ClassesMain extends javax.swing.JPanel {
 
     }
 
+    @SuppressWarnings("unchecked")
     private void loadData() throws Exception {
         HashMap m = new Qube().getComboData("teachers", "", "name");
         jComboBox2.setModel((ComboBoxModel<String>) m.get(1));

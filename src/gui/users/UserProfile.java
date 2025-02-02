@@ -58,6 +58,7 @@ public class UserProfile extends javax.swing.JDialog {
         loadData();
     }
 
+    @SuppressWarnings("unchecked")
     private void onLoad() {
         HashMap gM = new Qube().getComboData("gender", "", "name");
         jComboBox1.setModel((ComboBoxModel<String>) gM.get(1));

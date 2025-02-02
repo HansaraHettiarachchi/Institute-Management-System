@@ -37,6 +37,7 @@ public class UsersMain extends javax.swing.JPanel {
         loadUsers();
     }
 
+    @SuppressWarnings("unchecked")
     private void loadData() throws Exception {
         HashMap t = new Qube().getComboData("usertype", "", "name");
         jComboBox2.setModel((ComboBoxModel<String>) t.get(1));

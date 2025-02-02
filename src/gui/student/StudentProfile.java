@@ -67,6 +67,7 @@ public class StudentProfile extends javax.swing.JDialog {
         loadData();
     }
 
+    @SuppressWarnings("unchecked")
     private void onLoad() {
 
         HashMap sM = new Qube().getComboData("gender", "", "name");

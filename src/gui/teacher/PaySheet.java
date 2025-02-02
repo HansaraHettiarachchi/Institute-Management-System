@@ -79,6 +79,7 @@ public class PaySheet extends javax.swing.JDialog {
         return fCCount;
     }
 
+    @SuppressWarnings("unchecked")
     private void setTeacherPaymentData(DefaultTableModel dtm) {
         try {
             double tPaymentTot = 0;
@@ -135,6 +136,7 @@ public class PaySheet extends javax.swing.JDialog {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void setFreeCardData(DefaultTableModel dtm) {
         String query = "SELECT * FROM `freecard` INNER JOIN `student` ON `student`.`id` = `freecard`.`student_id` "
                 + "INNER JOIN `classes` ON `classes`.`id` = `freecard`.`classes_id` WHERE `classes`.`teachers_id` = '" + tId + "';";
@@ -180,6 +182,7 @@ public class PaySheet extends javax.swing.JDialog {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void setClassFeeD(DefaultTableModel dtm) {
         try {
             ResultSet rs = MySql.select("SELECT * FROM `classes` WHERE `teachers_id` = '" + tId + "';");
