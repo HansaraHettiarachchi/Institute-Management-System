@@ -40,11 +40,14 @@ import model.MySql;
 import org.opencv.videoio.Videoio;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import model.User;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Point;
 import org.opencv.objdetect.CascadeClassifier;
@@ -78,14 +81,24 @@ public class FaceRecognition extends javax.swing.JFrame {
     boolean stCam1 = false;
 
     Thread t = new Thread(() -> {
-        startCamera();
+        if (camType != -1) {
+            startCamera();
+        }
     });
 
     public FaceRecognition() {
-
         initComponents();
-        t.start();
         developeLater();
+
+    }
+
+    public FaceRecognition(Integer cam) {
+        initComponents();
+        developeLater();
+
+    }
+
+    private void allowAttMarking() {
         if (!recType.equals("Students")) {
             jLabel10.setText("");
         }
@@ -93,10 +106,15 @@ public class FaceRecognition extends javax.swing.JFrame {
         if (recType.equals("Employees")) {
             jLabel8.setText(" ");
             jLabel13.setText(" ");
+
+            if (User.getwTypeID() == 1 || User.getwTypeID() == 2) {
+            } else {
+                jButton1.setEnabled(false);
+                jTextField1.setEnabled(false);
+            }
         }
 
         jLabel12.setText(recType);
-
     }
 
     private void developeLater() {
@@ -174,9 +192,17 @@ public class FaceRecognition extends javax.swing.JFrame {
         jLabel8.setText("Class Fee :");
 
         jTextField1.setFont(new java.awt.Font("Poppins", 1, 15)); // NOI18N
+        jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jTextField1KeyPressed(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                jTextField1KeyTyped(evt);
+            }
+        });
 
         jButton1.setFont(new java.awt.Font("Poppins", 1, 16)); // NOI18N
-        jButton1.setText("Check");
+        jButton1.setText("Mark");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -461,22 +487,42 @@ public class FaceRecognition extends javax.swing.JFrame {
         this.classId = classId;
         this.teacherId = teacherId;
 
+        if (recType.equals("Employees")) {
+            tableName = "user";
+        } else {
+            tableName = "student";
+        }
+
         jLabel10.setText(className + " - " + teacherName);
         jLabel12.setText(recType);
     }
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        cap.release();
+        if (camType != -1) {
+            cap.release();
+        }
 
 
     }//GEN-LAST:event_formWindowClosed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        try {
-            ResultSet rs = MySql.select("SELECT * FROM `" + tableName + "` WHERE `id` = '" + id + "'; ");
+        String persons_id = jTextField1.getText();
 
+        if (persons_id.isEmpty()) {
+            JOptionPane.showMessageDialog(rootPane, "Please enter id.", "No id entered.", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            ResultSet rs = MySql.select("SELECT * FROM `" + tableName + "` WHERE `id` = '" + persons_id + "'; ");
+
+            if (rs.next()) {
+                markAttendance(persons_id);
+            } else {
+                JOptionPane.showMessageDialog(rootPane, "There is no Recode with this id", "Person not found", JOptionPane.ERROR_MESSAGE);
+            }
         } catch (Exception ex) {
-            l.log(Level.WARNING, "While checking student id", ex);
+            l.log(Level.WARNING, "While checking person's details id", ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -484,14 +530,27 @@ public class FaceRecognition extends javax.swing.JFrame {
         if (recType.equals("Employees")) {
             jLabel6.setText("NIC");
         }
-//        classId = "3";
-//        markAttendance("64288929");
+        t.start();
+
+        allowAttMarking();
+
         try {
             setTableData();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }//GEN-LAST:event_formWindowOpened
+
+    private void jTextField1KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyTyped
+        Qube.typeOnlyDigit(evt);
+    }//GEN-LAST:event_jTextField1KeyTyped
+
+    private void jTextField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyPressed
+        if (evt.getKeyCode() == 10) {
+            jButton1.doClick();
+            jTextField1.grabFocus();
+        }
+    }//GEN-LAST:event_jTextField1KeyPressed
 
     public static void main(String args[]) {
 
@@ -684,7 +743,7 @@ public class FaceRecognition extends javax.swing.JFrame {
 
         if (!rs.next()) {
             System.out.println(classId);
-            MySql.iud("INSERT INTO `attendance` (`DAT`,`student_id`,`classes_id`) VALUES (?, ?, ?);", new Object[]{dat, id, Integer.parseInt(classId)});
+            MySql.iud("INSERT INTO `attendance` (`DAT`,`student_id`,`classes_id`) VALUES (?, ?, ?);", new Object[]{dat, id, classId});
             previouslyMarkedAtt = id;
             DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
 
@@ -693,6 +752,46 @@ public class FaceRecognition extends javax.swing.JFrame {
             v.add(tBRCount);
             v.add(jLabel7.getText());
             v.add(jLabel11.getText());
+            v.add(dat);
+
+            dtm.addRow(v);
+            tBRCount++;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void markAttendanceExam(String id) throws Exception {
+        Date d = new Date();
+        String dat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(d);
+
+        ResultSet rs = MySql.select("SELECT * FROM `exam_attendance` WHERE `arrival` LIKE '" + new SimpleDateFormat("yyyy-MM-dd").format(d) + "%'"
+                + " AND `exams_id` = '" + classId + "' AND `student_id` = '" + id + "';");
+
+        if (!rs.next()) {
+            MySql.iud("INSERT INTO `exam_attendance` (`arrival`,`departure`,`student_id`,`exams_id`) VALUES (?, ?, ?, ?);", new Object[]{dat, dat, id, classId});
+            previouslyMarkedAtt = id;
+            DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
+
+            Vector v = new Vector();
+            v.add(tBRCount);
+            v.add(jLabel7.getText());
+            v.add(jLabel11.getText());
+            v.add(dat);
+            v.add("Not Leaved");
+
+            dtm.addRow(v);
+            tBRCount++;
+        } else {
+            MySql.iud("UPDATE `exam_attendance` SET `departure` = ? WHERE `id` = ?;", new Object[]{dat, rs.getString("exam_attendance.id")});
+            previouslyMarkedAtt = id;
+            DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
+
+            Vector v = new Vector();
+
+            v.add(tBRCount);
+            v.add(jLabel7.getText());
+            v.add(jLabel11.getText());
+            v.add(rs.getString("arrival"));
             v.add(dat);
 
             dtm.addRow(v);
@@ -722,10 +821,17 @@ public class FaceRecognition extends javax.swing.JFrame {
             v.add(time);
             v.add(time);
         } else {
-            MySql.iud("UPDATE `user_attendance` SET `leave_at` = '" + time + "' WHERE `id` = '" + rs.getString("id") + "'; ");
-            previouslyMarkedAtt = id;
-            v.add(rs.getString("arrival_at"));
-            v.add(time);
+            LocalTime time1 = LocalTime.parse(rs.getString("arrival_at"));
+            LocalTime time2 = LocalTime.parse(rs.getString("leave_at"));
+
+            Duration duration = Duration.between(time1, time2);
+
+            if (duration.toHours() <= 1) {
+                MySql.iud("UPDATE `user_attendance` SET `leave_at` = '" + time + "' WHERE `id` = '" + rs.getString("id") + "'; ");
+                previouslyMarkedAtt = id;
+                v.add(rs.getString("arrival_at"));
+                v.add(time);
+            }
         }
 
         dtm.addRow(v);
@@ -754,6 +860,8 @@ public class FaceRecognition extends javax.swing.JFrame {
                     jLabel7.setText(rs.getString("nic"));
 //                    jLabel13.setText(isPaid(rs.getString("id")));
                     markAttendanceUser(rs.getString("id"));
+                    jTextField1.setText("");
+                    jTextField1.grabFocus();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -765,8 +873,13 @@ public class FaceRecognition extends javax.swing.JFrame {
                 if (rs.next()) {
                     jLabel11.setText(rs.getString("fname") + " " + rs.getString("lname"));
                     jLabel7.setText(rs.getString("id"));
-                    jLabel13.setText(isPaid(rs.getString("id")));
-                    markAttendanceStudent(rs.getString("id"));
+
+                    if (recType.equals("Examinations")) {
+                        markAttendanceExam(rs.getString("id"));
+                    } else {
+                        jLabel13.setText(isPaid(rs.getString("id")));
+                        markAttendanceStudent(rs.getString("id"));
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -798,6 +911,22 @@ public class FaceRecognition extends javax.swing.JFrame {
                 v.add(rs.getString("fname") + " " + rs.getString("lname"));
                 v.add(rs.getString("arrival_at"));
                 v.add(rs.getString("leave_at"));
+
+                dtm.addRow(v);
+                tBRCount++;
+            }
+        } else if (recType.equals("Examinations")) {
+            ResultSet rs = MySql.select("SELECT * FROM exam_attendance INNER JOIN student ON student.id = exam_attendance.student_id"
+                    + " WHERE `arrival` LIKE '" + new SimpleDateFormat("yyyy-MM-dd").format(d) + "%' AND `exams_id` = '" + classId + "';");
+
+            while (rs.next()) {
+                Vector v = new Vector();
+
+                v.add(tBRCount);
+                v.add(rs.getString("student.id"));
+                v.add(rs.getString("fname") + " " + rs.getString("lname"));
+                v.add(rs.getString("arrival"));
+                v.add(rs.getString("departure"));
 
                 dtm.addRow(v);
                 tBRCount++;
@@ -843,17 +972,23 @@ public class FaceRecognition extends javax.swing.JFrame {
 
         tb.setColumnCount(0);
 
-        if (!recType.equals("Employees")) {
-            tb.addColumn("No.");
-            tb.addColumn("Student ID");
-            tb.addColumn("Student Name");
-            tb.addColumn("Date and Time");
-        } else {
+        if (recType.equals("Employees")) {
             tb.addColumn("No.");
             tb.addColumn("NIC");
             tb.addColumn("Name");
             tb.addColumn("Arrived Time");
             tb.addColumn("Leaved Time");
+        } else if (recType.equals("Examinations")) {
+            tb.addColumn("No.");
+            tb.addColumn("ID");
+            tb.addColumn("Name");
+            tb.addColumn("Arrived Time");
+            tb.addColumn("Leaved Time");
+        } else {
+            tb.addColumn("No.");
+            tb.addColumn("Student ID");
+            tb.addColumn("Student Name");
+            tb.addColumn("Date and Time");
         }
 
         jTable1.setModel(tb);

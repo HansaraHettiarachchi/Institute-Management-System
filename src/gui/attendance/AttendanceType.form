@@ -143,9 +143,10 @@
           <Font name="Poppins" size="14" style="1"/>
         </Property>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="2">
-            <StringItem index="0" value="Students"/>
-            <StringItem index="1" value="Employees"/>
+          <StringArray count="3">
+            <StringItem index="0" value="Employees"/>
+            <StringItem index="1" value="Students"/>
+            <StringItem index="2" value="Examinations"/>
           </StringArray>
         </Property>
       </Properties>

@@ -27,18 +27,18 @@ import model.RightAlignedComboBoxRenderer;
  * @author ASUS
  */
 public class AttendanceType extends javax.swing.JDialog {
-    
+
     private final Logger l = new Qube().setLogger("AttendanceType.log");
     private HashMap<String, Integer> camData = new HashMap<>();
     private HashMap<String, Integer> teacherData = new HashMap<>();
     private HashMap<String, Integer> classesData = new HashMap<>();
-    
+
     public AttendanceType(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         onlaod();
     }
-    
+
     @SuppressWarnings("unchecked")
     private void onlaod() {
         try {
@@ -46,29 +46,31 @@ public class AttendanceType extends javax.swing.JDialog {
         } catch (Exception ex) {
             l.log(Level.WARNING, "While checking detected cam using py file", ex);
         }
-        
+
         jComboBox3.setEnabled(false);
         jComboBox4.setEnabled(false);
         jComboBox1.setRenderer(new RightAlignedComboBoxRenderer());
         jComboBox2.setRenderer(new RightAlignedComboBoxRenderer());
-        jComboBox3.setRenderer(new RightAlignedComboBoxRenderer());
-        jComboBox4.setRenderer(new RightAlignedComboBoxRenderer());
-        
+//        jComboBox3.setRenderer(new RightAlignedComboBoxRenderer());
+//        jComboBox4.setRenderer(new RightAlignedComboBoxRenderer());
+
         HashMap m = new Qube().getComboData("teachers", "", "nic", "name");
         jComboBox4.setModel((ComboBoxModel<String>) m.get(1));
         teacherData = (HashMap<String, Integer>) m.get(2);
     }
-    
+
     private void loadData() throws Exception {
         ProcessBuilder pb1 = new ProcessBuilder("python", "pyScript/findDetectedCamS.py");
-        
+
         pb1.redirectErrorStream(true);
         Process p = pb1.start();
         BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        
+
         String results;
         Vector<String> v = new Vector<>();
-        
+        v.add("Manual Marking");
+        camData.put("Manual Marking", -1);
+
         int i = 0;
         while ((results = in.readLine()) != null) {
             v.add(results);
@@ -76,7 +78,7 @@ public class AttendanceType extends javax.swing.JDialog {
             i++;
         }
         jComboBox1.setModel(new DefaultComboBoxModel<>(v));
-        
+
     }
 
     /**
@@ -117,7 +119,7 @@ public class AttendanceType extends javax.swing.JDialog {
         jComboBox1.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
 
         jComboBox2.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Students", "Employees" }));
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Employees", "Students", "Examinations" }));
         jComboBox2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox2ActionPerformed(evt);
@@ -205,49 +207,71 @@ public class AttendanceType extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String sCam = String.valueOf(jComboBox1.getSelectedItem());
         String item = String.valueOf(jComboBox3.getSelectedItem());
-        
-        if (item.equals("SELECT")) {
+        String wType = String.valueOf(jComboBox2.getSelectedItem());
+        String teacher = String.valueOf(jComboBox4.getSelectedItem());
+
+        if (teacher.equals("SELECT") && !wType.equals("Employees")) {
             JOptionPane.showMessageDialog(this, "Please select teacher before start", "Select Teacher Please", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
-        FaceRecognition faceRec = new FaceRecognition();
-        faceRec.setData(String.valueOf(jComboBox2.getSelectedItem()),
-                camData.get(String.valueOf(jComboBox1.getSelectedItem())),
+
+        FaceRecognition faceRec;
+
+        if (sCam.equals("Manual Marking")) {
+            faceRec = new FaceRecognition();
+        } else {
+            faceRec = new FaceRecognition(camData.get(sCam));
+        }
+        faceRec.setData(
+                wType,
+                camData.get(sCam),
                 String.valueOf(classesData.get(item)),
-                String.valueOf(teacherData.get(String.valueOf(jComboBox4.getSelectedItem()))),
+                String.valueOf(teacherData.get(teacher)),
                 item,
-                String.valueOf(jComboBox4.getSelectedItem())
+                teacher
         );
-        
-        faceRec.setVisible(true);
+
         this.dispose();
+        faceRec.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
-        
+
         String item = String.valueOf(jComboBox2.getSelectedItem());
-        
+
         if (item.equals("Employees")) {
             jComboBox3.setEnabled(false);
             jComboBox4.setEnabled(false);
-        } else if (item.equals("Students")) {
-            
+        } else {
+
             jComboBox3.setEnabled(true);
             jComboBox4.setEnabled(true);
-            
+
         }
     }//GEN-LAST:event_jComboBox2ActionPerformed
 
     @SuppressWarnings("unchecked")
     private void jComboBox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox4ActionPerformed
         String item = String.valueOf(jComboBox4.getSelectedItem());
-        
-        HashMap m = new Qube().getComboData("classes", "WHERE `classes`.`teachers_id` = '" + teacherData.get(String.valueOf(item)) + "'", "name", false);
-        jComboBox3.setModel((ComboBoxModel<String>) m.get(1));
-        classesData = (HashMap<String, Integer>) m.get(2);
-        
+        String type = String.valueOf(jComboBox2.getSelectedItem());
+
+        if (type.equals("Examinations")) {
+            HashMap m = new Qube().getComboData("exams", "INNER JOIN classes ON classes.id = exams.classes_id WHERE `teachers_id` = '" + teacherData.get(item) + "'", "name", "paper_id", false);
+            jComboBox3.setModel((ComboBoxModel<String>) m.get(1));
+            classesData = (HashMap<String, Integer>) m.get(2);
+
+            jLabel3.setText("Examinations :");
+        } else {
+            HashMap m = new Qube().getComboData("classes", "WHERE `classes`.`teachers_id` = '" + teacherData.get(item) + "'", "name", false);
+            jComboBox3.setModel((ComboBoxModel<String>) m.get(1));
+            classesData = (HashMap<String, Integer>) m.get(2);
+
+            jLabel3.setText("Classes :");
+
+        }
+
         jComboBox3.setEnabled(true);
     }//GEN-LAST:event_jComboBox4ActionPerformed
 
