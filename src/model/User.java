@@ -11,6 +11,7 @@ package model;
 public class User {
 
     private static int id;
+    private static int wTypeID = 3;
     private static boolean bDone = true;
 
     /**
@@ -39,6 +40,20 @@ public class User {
      */
     public static void setbDone(boolean abDone) {
         bDone = abDone;
+    }
+
+    /**
+     * @return the wTypeID
+     */
+    public static int getwTypeID() {
+        return wTypeID;
+    }
+
+    /**
+     * @param awTypeID the wTypeID to set
+     */
+    public static void setwTypeID(int awTypeID) {
+        wTypeID = awTypeID;
     }
 
 }

@@ -66,6 +66,7 @@ public class StudentExams extends javax.swing.JDialog {
 
     }
 
+    @SuppressWarnings("unchecked")
     private void onLoad() {
 
         HashMap cM = new Qube().getComboData("classes", "", "name");

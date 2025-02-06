@@ -218,6 +218,32 @@ public class Qube {
         return mp;
     }
 
+    @SuppressWarnings("unchecked")
+    public HashMap<Integer, Object> getComboData(String tableName, String rest, String columnName1, String columNamae2, Boolean withSelect) {
+
+        Vector<String> v = new Vector<>();
+        HashMap<Integer, Object> mp = new HashMap<>();
+        HashMap<String, Object> comData = new HashMap<>();
+
+        try {
+            ResultSet rs = MySql.select("SELECT * FROM `" + tableName + "` " + rest + " ;");
+            
+            if (withSelect) {
+                v.add("SELECT");
+            }
+            while (rs.next()) {
+                v.add(rs.getString(columnName1) + " : " + rs.getString(columNamae2));
+                comData.put(rs.getString(columnName1) + " : " + rs.getString(columNamae2), rs.getString("id"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        mp.put(1, new DefaultComboBoxModel(v));
+        mp.put(2, comData);
+        return mp;
+    }
+
     public static ImageIcon resizeImage(int w, int h, String path) throws IOException {
         BufferedImage originalImage = ImageIO.read(new File(path));
 //            BufferedImage resizedImage = new BufferedImage(l.getWidth(), l.getWidth(), BufferedImage.TYPE_INT_ARGB);

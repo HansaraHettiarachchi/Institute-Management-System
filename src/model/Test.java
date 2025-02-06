@@ -1,16 +1,25 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
-/**
- *
- * @author Hansara
- */
+
+import java.time.LocalTime;
+import java.time.Duration;
+
 public class Test {
     public static void main(String[] args) {
-        String r = "Match found- 6 with distance: 0.8633835243194133".split(":")[0].split(":")[0].split("-")[1].split(" with distance")[0].replaceAll("\\s", "");
-        System.out.println(r);
+        String timeString1 = "20:06:00";
+        String timeString2 = "22:30:45";
+
+        LocalTime time1 = LocalTime.parse(timeString1);
+        LocalTime time2 = LocalTime.parse(timeString2);
+
+        Duration duration = Duration.between(time1, time2);
+
+        long diffInHours = duration.toHours();
+
+        if (diffInHours >= 2) {
+            System.out.println(diffInHours);
+        } else {
+            System.out.println("Difference: " + diffInHours + " hours");
+        }
     }
 }
