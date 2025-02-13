@@ -674,7 +674,7 @@ public class FaceRecognition extends javax.swing.JFrame {
                             }
 
                             try {
-                                Thread.sleep(400);
+                                Thread.sleep(500);
                             } catch (InterruptedException ex) {
                                 ex.printStackTrace();
                             }

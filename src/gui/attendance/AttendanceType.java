@@ -60,7 +60,7 @@ public class AttendanceType extends javax.swing.JDialog {
     }
 
     private void loadData() throws Exception {
-        ProcessBuilder pb1 = new ProcessBuilder("python", "pyScript/findDetectedCamS.py");
+        ProcessBuilder pb1 = new ProcessBuilder("python", "src/pyScript/findDetectedCamS.py");
 
         pb1.redirectErrorStream(true);
         Process p = pb1.start();

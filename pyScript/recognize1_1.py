@@ -9,22 +9,29 @@ import string
 
 class Recognize:
 
-    def __init__(self):
-        self.image_data_path = "pyScript/VGG-Face.pkl"
-        # self.image_data_path = "pyScript/VGG-Face.pkl"
-        self.image_data = self.load_image_data(self.image_data_path)
-        self.model = DeepFace.build_model("VGG-Face")
-        self.detected_faces_dir = "pyScript/detected_faces"
-        os.makedirs(self.detected_faces_dir, exist_ok=True)
-        self.face_detector = MTCNN()  # Initialize MTCNN detector
-        # print("DeepFace model loaded and image data loaded.",flush=True)
+    # Make variables static
+    image_data = None
+    model = None
+    detected_faces_dir = "src/pyScript/detected_faces"
+    face_detector = None
+
+    def __init__(self, image_data_path):
+        if Recognize.image_data is None:
+            Recognize.image_data_path = image_data_path  # Set the path from the constructor
+            Recognize.image_data = self.load_image_data(Recognize.image_data_path)
+        if Recognize.model is None:
+            Recognize.model = DeepFace.build_model("VGG-Face")
+            print("DeepFace model loaded and image data loaded.",flush=True)
+        if Recognize.face_detector is None:
+            Recognize.face_detector = MTCNN()  # Initialize MTCNN detector
+            os.makedirs(Recognize.detected_faces_dir, exist_ok=True)
 
     def load_image_data(self, pkl_path):
         with open(pkl_path, 'rb') as pkl_file:
             data = pickle.load(pkl_file)
         return data
 
-    def find_exact_match(self, new_embedding, image_data, threshold=0.9):
+    def find_exact_match(self, new_embedding, image_data, threshold=01.00):
         min_distance = float('inf')
         match_name = None
 
@@ -46,7 +53,7 @@ class Recognize:
     def is_clear_image(image):
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         laplacian_var = cv2.Laplacian(gray_image, cv2.CV_64F).var()
-        return laplacian_var > 100  # Adjust threshold as needed
+        return laplacian_var > 0  # Adjust threshold as needed
 
     @staticmethod
     def get_random_string(length=10):
@@ -56,11 +63,11 @@ class Recognize:
     def preprocess_image(self, image):
         """Preprocess the image for face detection and recognition."""
         if not self.is_clear_image(image):
-            print("Image is not clear.")
+            print("Image is not clear.",flush=True)
             return None
 
         # Detect faces using MTCNN
-        faces = self.face_detector.detect_faces(image)
+        faces = Recognize.face_detector.detect_faces(image)
 
         if len(faces) == 0:
             print("No face detected in image.",flush=True)
@@ -79,8 +86,7 @@ class Recognize:
 
             # Save cropped face image with a random name
             random_name = self.get_random_string() + ".jpg"
-            preprocessed_image_path = os.path.join(self.detected_faces_dir, random_name)
-            cv2.imwrite(preprocessed_image_path, cropped_face)
+            preprocessed_image_path = os.path.join(Recognize.detected_faces_dir, random_name)
             cropped_faces.append(cropped_face)
 
         if len(cropped_faces) == 0:
@@ -96,30 +102,18 @@ class Recognize:
         # Preprocess the image (check clarity and detect faces)
         cropped_faces = self.preprocess_image(frame)
         if cropped_faces is None:
-            return "No suitable face detected in frame."
+            return None
 
         # Recognize faces in the cropped images
         results = []
         for face in cropped_faces:
             new_embedding = DeepFace.represent(face, model_name="VGG-Face", enforce_detection=False)[0]["embedding"]
-            match_name, min_distance = self.find_exact_match(new_embedding, self.image_data)
+            match_name, min_distance = self.find_exact_match(new_embedding, Recognize.image_data)
 
             if match_name:
                 print(f"Match found- {match_name} with distance: {min_distance}", flush=True)
-                # results.append(f"Match found: {match_name} with distance: {min_distance}")
             else:
                 print("No person found", flush=True)
-                # results.append("No person found")
 
         return results
-    
-# if __name__ == "__main__":
-#     # Example usage
-#     recognize = Recognize()
-#     image_path = "images/14.jpg"  # Provide the path to the image you want to process
 
-#     # Process the image (skips if blurry or no face detected)
-#     frame = cv2.imread(image_path)
-#     results = recognize.setData(frame)
-#     for result in results:
-#         print(result)

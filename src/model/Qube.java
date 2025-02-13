@@ -81,6 +81,21 @@ public class Qube {
                     }
 
                 }
+                
+//                ResultSet rs2 = MySql.select("SELECT * FROM `user`; ");
+//
+//                while (rs1.next()) {
+//                    ResultSet rs = MySql.select("SELECT * FROM `user_payments` WHERE `user_id` = '" + rs2.getInt("id") + "' AND  `DAT` LIKE '%" + date + "%' AND `desc` = 'Opening Balance';");
+//
+//                    if (!rs.next()) {
+//                        PaySheet p = new PaySheet(new Frame(), true, rs2.getString("id"), fullDateFormatter.format(d), rs2.getString("name"));
+//                        double tot = p.getTotBalance();
+//                        MySql.iud("INSERT INTO `user_payments` (`DAT`, `price`, `user_id`, `paymentType_id`, `desc`) VALUES"
+//                                + " ('" + fullDateFormatter.format(d1) + "-01" + "', '" + tot + "', '" + rs2.getString("id") + "', '2', 'Opening Balance');");
+//                        p.dispose();
+//                    }
+//
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {

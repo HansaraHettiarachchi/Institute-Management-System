@@ -17,10 +17,10 @@ socket = context.socket(zmq.PULL)
 socket.bind(sys.argv[1])
 print(f"Listening on port {sys.argv[1]}", flush=True)
 
-recognizer = Recognize()
 
 def call(frame):
-    recognizer.setData(frame)
+    # Recognize("src/pyScript/VGG-Face.pkl").setData(frame)
+    Recognize("pyScript/VGG-Face.pkl").setData(frame)
 
 running = True
 

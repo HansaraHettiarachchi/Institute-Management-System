@@ -22,7 +22,7 @@ import model.Qube;
  */
 public class Teachers_Salary extends javax.swing.JDialog {
 
-    private static java.util.logging.Logger l = new Qube().setLogger("teachers Salary.log");
+    private static java.util.logging.Logger l = new Qube().setLogger("Employee Salary.log");
     private String text;
     PaySheet p;
     String tId;
